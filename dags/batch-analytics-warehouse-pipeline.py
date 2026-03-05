@@ -27,7 +27,7 @@ default_args = {
 with DAG(
     dag_id="batch_analytics_warehouse",
     start_date=datetime(2025, 1, 1),
-    schedule="@daily",  # daily 2 AM
+    schedule="@hourly",  # daily 2 AM
     catchup=False,
     default_args=default_args,
     tags=["composer", "etl", "warehouse"],
