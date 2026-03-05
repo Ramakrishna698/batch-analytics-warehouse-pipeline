@@ -1,0 +1,9 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+- name: 'gcr.io/cloud-builders/gsutil'
+  args:
+    - 'cp'
+    - 'dags/*.py'
+    - 'gs://us-central1-sales-data-pipe-bd59df63-bucket/dags/'
