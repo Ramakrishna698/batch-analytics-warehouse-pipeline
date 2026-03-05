@@ -1,9 +1,19 @@
 options:
   logging: CLOUD_LOGGING_ONLY
 
+substitutions:
+  _DAGS_BUCKET: us-central1-sales-data-pipe-bd59df63-bucket
+
 steps:
+- name: 'python:3.11'
+  dir: 'portfolio-projects/02-batch-analytics-warehouse-pipeline'
+  entrypoint: 'python'
+  args: ['-m', 'py_compile', 'dags/batch_analytics_warehouse.py']
+
 - name: 'gcr.io/cloud-builders/gsutil'
+  dir: 'portfolio-projects/02-batch-analytics-warehouse-pipeline'
   args:
+    - '-m'
     - 'cp'
     - 'dags/*.py'
-    - 'gs://us-central1-sales-data-pipe-bd59df63-bucket/dags/'
+    - 'gs://${_DAGS_BUCKET}/dags/'
