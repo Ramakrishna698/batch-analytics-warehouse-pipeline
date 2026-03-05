@@ -47,52 +47,52 @@ with DAG(
         },
     )
 
-    # upsert_erp_orders = BigQueryInsertJobOperator(
-    #     task_id="upsert_erp_orders",
-    #     location=LOCATION,
-    #     configuration={
-    #         "query": {
-    #             "query": f"""
-    #             CREATE TABLE IF NOT EXISTS `{PROJECT_ID}.{STG_DATASET}.erp_orders` (
-    #               order_id STRING,
-    #               customer_id STRING,
-    #               order_ts TIMESTAMP,
-    #               order_date DATE,
-    #               order_amount NUMERIC,
-    #               status STRING,
-    #               etl_loaded_at TIMESTAMP
-    #             )
-    #             PARTITION BY order_date
-    #             CLUSTER BY customer_id;
+    upsert_erp_orders = BigQueryInsertJobOperator(
+        task_id="upsert_erp_orders",
+        location=LOCATION,
+        configuration={
+            "query": {
+                "query": f"""
+                CREATE TABLE IF NOT EXISTS `{PROJECT_ID}.{STG_DATASET}.erp_orders` (
+                  order_id STRING,
+                  customer_id STRING,
+                  order_ts TIMESTAMP,
+                  order_date DATE,
+                  order_amount NUMERIC,
+                  status STRING,
+                  etl_loaded_at TIMESTAMP
+                )
+                PARTITION BY order_date
+                CLUSTER BY customer_id;
 
-    #             MERGE `{PROJECT_ID}.{STG_DATASET}.erp_orders` T
-    #             USING (
-    #               SELECT
-    #                 CAST(order_id AS STRING) AS order_id,
-    #                 CAST(customer_id AS STRING) AS customer_id,
-    #                 TIMESTAMP(order_ts) AS order_ts,
-    #                 DATE(order_ts) AS order_date,
-    #                 CAST(order_amount AS NUMERIC) AS order_amount,
-    #                 CAST(status AS STRING) AS status,
-    #                 CURRENT_TIMESTAMP() AS etl_loaded_at
-    #               FROM `{PROJECT_ID}.{RAW_DATASET}.erp_orders`
-    #               WHERE DATE(_ingest_ts) = DATE('{PROCESS_DATE}')
-    #             ) S
-    #             ON T.order_id = S.order_id
-    #             WHEN MATCHED THEN UPDATE SET
-    #               customer_id = S.customer_id,
-    #               order_ts = S.order_ts,
-    #               order_date = S.order_date,
-    #               order_amount = S.order_amount,
-    #               status = S.status,
-    #               etl_loaded_at = S.etl_loaded_at
-    #             WHEN NOT MATCHED THEN INSERT (
-    #               order_id, customer_id, order_ts, order_date, order_amount, status, etl_loaded_at
-    #             ) VALUES (
-    #               S.order_id, S.customer_id, S.order_ts, S.order_date, S.order_amount, S.status, S.etl_loaded_at
-    #             );
-    #             """,
-    #             "useLegacySql": False,
-    #         }
-    #     },
-    # )
+                MERGE `{PROJECT_ID}.{STG_DATASET}.erp_orders` T
+                USING (
+                  SELECT
+                    CAST(order_id AS STRING) AS order_id,
+                    CAST(customer_id AS STRING) AS customer_id,
+                    TIMESTAMP(order_ts) AS order_ts,
+                    DATE(order_ts) AS order_date,
+                    CAST(order_amount AS NUMERIC) AS order_amount,
+                    CAST(status AS STRING) AS status,
+                    CURRENT_TIMESTAMP() AS etl_loaded_at
+                  FROM `{PROJECT_ID}.{RAW_DATASET}.erp_orders`
+                  WHERE DATE(_ingest_ts) = DATE('{PROCESS_DATE}')
+                ) S
+                ON T.order_id = S.order_id
+                WHEN MATCHED THEN UPDATE SET
+                  customer_id = S.customer_id,
+                  order_ts = S.order_ts,
+                  order_date = S.order_date,
+                  order_amount = S.order_amount,
+                  status = S.status,
+                  etl_loaded_at = S.etl_loaded_at
+                WHEN NOT MATCHED THEN INSERT (
+                  order_id, customer_id, order_ts, order_date, order_amount, status, etl_loaded_at
+                ) VALUES (
+                  S.order_id, S.customer_id, S.order_ts, S.order_date, S.order_amount, S.status, S.etl_loaded_at
+                );
+                """,
+                "useLegacySql": False,
+            }
+        },
+    )
