@@ -6,7 +6,7 @@ from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryInsertJobOperator,
 )
 
-PROJECT_ID = "YOUR_PROJECT"
+PROJECT_ID = "practice-project-488818"
 LOCATION = "US"
 
 RAW_DATASET = "raw"
@@ -25,7 +25,7 @@ default_args = {
 }
 
 with DAG(
-    dag_id="batch_analytics_warehouse",
+    dag_id="batch_analytics_warehouse_pipeline",
     start_date=datetime(2025, 1, 1),
     schedule="0 2 * * *",  # daily 2 AM
     catchup=False,
