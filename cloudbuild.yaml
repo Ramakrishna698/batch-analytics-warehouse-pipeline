@@ -5,15 +5,40 @@ substitutions:
   _DAGS_BUCKET: us-central1-sales-data-pipe-bd59df63-bucket
 
 steps:
+# Step 1: Validate DAG syntax
 - name: 'python:3.11'
-  dir: 'portfolio-projects/02-batch-analytics-warehouse-pipeline'
   entrypoint: 'python'
-  args: ['-m', 'py_compile', 'dags/batch_analytics_warehouse.py']
+  args:
+    - '-m'
+    - 'py_compile'
+    - 'dags/batch_analytics_warehouse.py'
 
+# Step 2: Upload DAGs to Composer bucket
 - name: 'gcr.io/cloud-builders/gsutil'
-  dir: 'portfolio-projects/02-batch-analytics-warehouse-pipeline'
   args:
     - '-m'
     - 'cp'
     - 'dags/*.py'
     - 'gs://${_DAGS_BUCKET}/dags/'
+
+
+
+# options:
+#   logging: CLOUD_LOGGING_ONLY
+
+# substitutions:
+#   _DAGS_BUCKET: us-central1-sales-data-pipe-bd59df63-bucket
+
+# steps:
+# - name: 'python:3.11'
+#   dir: 'portfolio-projects/02-batch-analytics-warehouse-pipeline'
+#   entrypoint: 'python'
+#   args: ['-m', 'py_compile', 'dags/batch_analytics_warehouse.py']
+
+# - name: 'gcr.io/cloud-builders/gsutil'
+#   dir: 'portfolio-projects/02-batch-analytics-warehouse-pipeline'
+#   args:
+#     - '-m'
+#     - 'cp'
+#     - 'dags/*.py'
+#     - 'gs://${_DAGS_BUCKET}/dags/'
