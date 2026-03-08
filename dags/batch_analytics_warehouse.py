@@ -29,7 +29,7 @@ default_args = {
 }
 
 with DAG(
-    dag_id="batch_analytics_warehouse_pipeline",
+    dag_id="batch_analytics_warehouse_pipeline_v2",
     start_date=datetime(2025, 1, 1),
     schedule="@daily",  # for testing, change to "0 2 * * *" for daily 2 AM
     catchup=False,
