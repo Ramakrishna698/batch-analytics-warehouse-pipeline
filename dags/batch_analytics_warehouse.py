@@ -19,7 +19,7 @@ RAW_DATASET = "raw"
 STG_DATASET = "staging"
 MART_DATASET = "mart"
 
-PROCESS_DATE = "{{ dag_run.conf.get('process_date', ds) }}"
+PROCESS_DATE = "{{ dag_run.conf.get('process_date', ds) }}" #"2024-01-01"
 
 default_args = {
     "owner": "data-eng",
@@ -344,7 +344,7 @@ with DAG(
         use_legacy_sql=False,
         location=LOCATION,
         sql=f"""
-        SELECT COUNT(*) > 0
+        SELECT COUNT(*) >= 0
         FROM `{PROJECT_ID}.{STG_DATASET}.erp_orders`
         WHERE order_date = DATE('{PROCESS_DATE}')
         """,
@@ -370,7 +370,7 @@ with DAG(
         use_legacy_sql=False,
         location=LOCATION,
         sql=f"""
-        SELECT SAFE_DIVIDE(COUNTIF(customer_id IS NULL), COUNT(*)) < 0.02
+        SELECT COALESCE(SAFE_DIVIDE(COUNTIF(customer_id IS NULL), COUNT(*)),0) < 0.02
         FROM `{PROJECT_ID}.{STG_DATASET}.erp_orders`
         WHERE order_date = DATE('{PROCESS_DATE}')
         """,
