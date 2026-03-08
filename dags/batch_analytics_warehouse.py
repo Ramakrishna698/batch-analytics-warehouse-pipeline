@@ -377,7 +377,19 @@ with DAG(
     # DAG FLOW
     # -----------------------------------------------------------
 
-    create_raw_schema >> create_stg_schema >> create_mart_schema >> [upsert_erp_orders, upsert_crm_customers, upsert_app_events]
+    create_raw_schema >> create_stg_schema >> create_mart_schema
+
+    create_mart_schema >> create_bucket
+
+    create_bucket >> upload_all_files
+
+    upload_all_files >> load_tasks
+
+    load_tasks >> [
+        upsert_erp_orders,
+        upsert_crm_customers,
+        upsert_app_events,
+    ]
 
     [upsert_erp_orders, upsert_crm_customers, upsert_app_events] >> build_daily_mart
 
