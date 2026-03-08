@@ -25,11 +25,11 @@ default_args = {
     "owner": "data-eng",
     "depends_on_past": False,
     "retries": 2,
-    "retry_delay": timedelta(minutes=5),
+    "retry_delay": timedelta(minutes=2),
 }
 
 with DAG(
-    dag_id="batch_analytics_warehouse_pipeline_v3",
+    dag_id="batch_analytics_warehouse_pipeline_v4",
     start_date=datetime(2025, 1, 1),
     schedule="@daily",  # for testing, change to "0 2 * * *" for daily 2 AM
     catchup=False,
