@@ -386,11 +386,12 @@ with DAG(
 
     upload_all_files >> load_tasks
 
-    load_tasks >> [
-        upsert_erp_orders,
-        upsert_crm_customers,
-        upsert_app_events,
-    ]
+    for task in load_tasks:
+        task >> [
+            upsert_erp_orders,
+            upsert_crm_customers,
+            upsert_app_events,
+        ]
 
     [upsert_erp_orders, upsert_crm_customers, upsert_app_events] >> build_daily_mart
 
