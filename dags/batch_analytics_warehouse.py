@@ -37,15 +37,39 @@ with DAG(
     # Create datasets
     # -----------------------------------------------------------
 
-    create_schemas = BigQueryInsertJobOperator(
-        task_id="create_schemas",
+    create_raw_schema = BigQueryInsertJobOperator(
+    task_id="create_raw_schema",
+    location=LOCATION,
+    configuration={
+        "query": {
+            "query": f"""
+            CREATE SCHEMA IF NOT EXISTS `{PROJECT_ID}.{RAW_DATASET}`
+            """,
+            "useLegacySql": False,
+            }
+        },
+    )
+
+    create_stg_schema = BigQueryInsertJobOperator(
+        task_id="create_stg_schema",
         location=LOCATION,
         configuration={
             "query": {
                 "query": f"""
-                CREATE SCHEMA IF NOT EXISTS `{PROJECT_ID}.{RAW_DATASET}`;
-                CREATE SCHEMA IF NOT EXISTS `{PROJECT_ID}.{STG_DATASET}`;
-                CREATE SCHEMA IF NOT EXISTS `{PROJECT_ID}.{MART_DATASET}`;
+                CREATE SCHEMA IF NOT EXISTS `{PROJECT_ID}.{STG_DATASET}`
+                """,
+                "useLegacySql": False,
+            }
+        },
+    )
+
+    create_mart_schema = BigQueryInsertJobOperator(
+        task_id="create_mart_schema",
+        location=LOCATION,
+        configuration={
+            "query": {
+                "query": f"""
+                CREATE SCHEMA IF NOT EXISTS `{PROJECT_ID}.{MART_DATASET}`
                 """,
                 "useLegacySql": False,
             }
@@ -303,7 +327,7 @@ with DAG(
     # DAG FLOW
     # -----------------------------------------------------------
 
-    create_schemas >> [upsert_erp_orders, upsert_crm_customers, upsert_app_events]
+    create_raw_schema >> create_stg_schema >> create_mart_schema >> [upsert_erp_orders, upsert_crm_customers, upsert_app_events]
 
     [upsert_erp_orders, upsert_crm_customers, upsert_app_events] >> build_daily_mart
 
