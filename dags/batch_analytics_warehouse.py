@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 
 from airflow import DAG
+from airflow.providers.google.cloud.operators.gcs import GCSCreateBucketOperator
+from airflow.providers.google.cloud.transfers.local_to_gcs import LocalFilesystemToGCSOperator
+
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCheckOperator,
     BigQueryInsertJobOperator,
@@ -32,6 +35,53 @@ with DAG(
     default_args=default_args,
     tags=["composer", "etl", "warehouse"],
 ) as dag:
+  
+    # -----------------------------------------------------------
+    # Create bucket
+    # -----------------------------------------------------------
+
+    create_bucket = GCSCreateBucketOperator(
+      task_id="create_bucket",
+      bucket_name="practice-project-488818-raw-data",
+      storage_class="STANDARD",
+      location="US",
+    )
+    
+    # -----------------------------------------------------------
+    # Copying local files to GCS
+    # -----------------------------------------------------------
+    upload_all_files = LocalFilesystemToGCSOperator(
+        task_id="upload_all_files",
+        src="/home/airflow/gcs/data/*.csv",
+        dst="raw/",
+        bucket="practice-project-488818-raw-data",
+    )
+    
+    # -----------------------------------------------------------
+    # Load data from GCS to BigQuery raw tables
+    # -----------------------------------------------------------
+
+    
+    tables = [
+        ("erp_orders", "erp_orders.csv"),
+        ("crm_customers", "crm_customers.csv"),
+        ("app_events", "app_events.csv"),
+    ]
+
+    load_tasks = []
+
+    for table, file in tables:
+        task = GCSToBigQueryOperator(
+            task_id=f"load_{table}",
+            bucket="practice-project-488818-raw-data",
+            source_objects=[f"raw/{file}"],
+            destination_project_dataset_table=f"{PROJECT_ID}.raw.{table}",
+            source_format="CSV",
+            skip_leading_rows=1,
+            autodetect=True,
+            write_disposition="WRITE_TRUNCATE",
+        )
+        load_tasks.append(task)
 
     # -----------------------------------------------------------
     # Create datasets
